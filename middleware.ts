@@ -14,11 +14,28 @@ const API_PERMISSIONS: Record<string, Permission> = {
   '/api/api-keys': PERMISSIONS.MANAGE_API_KEY,
 }
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "*",
+}
 export async function middleware(request: Request) {
   if (request.method === 'OPTIONS') {
-    return NextResponse.next()
+    return new NextResponse(null, { status: 204, headers: corsHeaders })
   }
 
+  const response = await runMiddlewareLogic(request)
+
+  const url = new URL(request.url)
+  if (url.pathname.startsWith('/api')) {
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value)
+    })
+  }
+
+  return response
+}
+async function runMiddlewareLogic(request: Request) {
   const url = new URL(request.url)
   const pathname = url.pathname
 
