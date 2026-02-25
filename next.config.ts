@@ -25,6 +25,21 @@ const nextConfig = {
       }
     ],
   },
+  // 自动接管所有 OPTIONS 请求
+  async headers() {
+    return [
+      {
+        // 匹配所有的 API 路由，包含所有动态 UUID 或多级路径
+        source: "/api/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS, PATCH" },
+          // 允许携带前端插件发送的所有自定义 Header（如 X-API-Key）
+          { key: "Access-Control-Allow-Headers", value: "*" },
+        ],
+      },
+    ];
+  },
 };
 
 const withPWAConfigured = withPWA({
