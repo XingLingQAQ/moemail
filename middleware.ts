@@ -15,7 +15,6 @@ const API_PERMISSIONS: Record<string, Permission> = {
 }
 
 export async function middleware(request: Request) {
-  export async function middleware(request: Request) {
   if (request.method === 'OPTIONS') {
     return NextResponse.next()
   }
