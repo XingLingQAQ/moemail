@@ -4,6 +4,17 @@ import { EMAIL_CONFIG } from "@/config"
 import { checkPermission } from "@/lib/auth"
 
 export const runtime = "edge"
+// 1. 统一定义跨域头
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*", 
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "*", 
+}
+
+// 2. 专门应付浏览器的跨域预检请求！
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: corsHeaders })
+}
 
 export async function GET() {
   const env = getRequestContext().env
@@ -37,7 +48,7 @@ export async function GET() {
       siteKey: turnstileSiteKey || "",
       secretKey: turnstileSecretKey || "",
     } : undefined
-  })
+    }, { headers: corsHeaders }) 
 }
 
 export async function POST(request: Request) {
@@ -46,7 +57,7 @@ export async function POST(request: Request) {
   if (!canAccess) {
     return Response.json({
       error: "权限不足"
-    }, { status: 403 })
+    }, { status: 403, headers: corsHeaders })
   }
 
   const {
@@ -68,7 +79,7 @@ export async function POST(request: Request) {
   }
   
   if (![ROLES.DUKE, ROLES.KNIGHT, ROLES.CIVILIAN].includes(defaultRole)) {
-    return Response.json({ error: "无效的角色" }, { status: 400 })
+    return Response.json({ error: "无效的角色" }, { status: 400, headers: corsHeaders })
   }
 
   const turnstileConfig = turnstile ?? {
@@ -78,7 +89,7 @@ export async function POST(request: Request) {
   }
 
   if (turnstileConfig.enabled && (!turnstileConfig.siteKey || !turnstileConfig.secretKey)) {
-    return Response.json({ error: "Turnstile 启用时需要提供 Site Key 和 Secret Key" }, { status: 400 })
+    return Response.json({ error: "Turnstile 启用时需要提供 Site Key 和 Secret Key" }, { status: 400, headers: corsHeaders })
   }
 
   const env = getRequestContext().env
@@ -92,5 +103,5 @@ export async function POST(request: Request) {
     env.SITE_CONFIG.put("TURNSTILE_SECRET_KEY", turnstileConfig.secretKey)
   ])
 
-  return Response.json({ success: true })
+  return Response.json({ success: true }, { headers: corsHeaders })
 } 
